@@ -1,8 +1,15 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+
 import 'package:google_sign_in/google_sign_in.dart';
+
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_database/ui/firebase_animated_list.dart';
+
 
 void main() {
   runApp(new FriendlyChatApp());
@@ -10,6 +17,8 @@ void main() {
 
 final googleSignIn = new GoogleSignIn();
 final analytics = new FirebaseAnalytics();
+final auth = FirebaseAuth.instance;
+final reference = FirebaseDatabase.instance.reference().child('messages');
 
 final kIOSTheme = new ThemeData(
   primarySwatch: Colors.orange,
@@ -31,6 +40,13 @@ Future<Null> _ensureLoggedIn() async {
     await googleSignIn.signIn();
     analytics.logLogin();
   }
+  if (auth.currentUser == null) {
+    var credentials = await googleSignIn.currentUser.authentication;
+    await auth.signInWithGoogle(
+      idToken: credentials.idToken,
+      accessToken: credentials.accessToken
+    );
+  }
 }
 
 class FriendlyChatApp extends StatelessWidget {
@@ -49,8 +65,7 @@ class ChatScreen extends StatefulWidget {
   State createState() => new ChatScreenState();
 }
 
-class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
-  final _messages = <ChatMessage>[];
+class ChatScreenState extends State<ChatScreen> {
   final _textController = new TextEditingController();
   var _isComposing = false;
 
@@ -61,11 +76,14 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       body: new Column(
         children: <Widget>[
           new Flexible(
-            child: new ListView.builder(
-              padding: const EdgeInsets.all(8.0),
+            child: new FirebaseAnimatedList(
+              query: reference,
+              sort: (a, b) => b.key.compareTo(a.key),
+              padding: new EdgeInsets.all(8.0),
               reverse: true,
-              itemBuilder: (_, int index) => _messages[index],
-              itemCount: _messages.length,
+              itemBuilder: (_, DataSnapshot snapshot, Animation<double> animation) {
+                return new ChatMessage(snapshot: snapshot, animation: animation);
+              },
             ),
           ),
           new Divider(height: 1.0),
@@ -76,13 +94,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    for (var message in _messages)
-      message.animationController.dispose();
-    super.dispose();
   }
 
   Widget _buildTextComposer() {
@@ -126,30 +137,26 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   }
 
   void _sendMessage({ String text }) {
-    var message = new ChatMessage(
-      text: text,
-      animationController: new AnimationController(
-        duration: new Duration(milliseconds: 300),
-        vsync: this,
-      ),
-    );
-    setState(() => _messages.insert(0, message));
-    message.animationController.forward();
+    reference.push().set({
+      'text': text,
+      'senderName': googleSignIn.currentUser.displayName,
+      'senderPhotoUrl': googleSignIn.currentUser.photoUrl,
+    });
     analytics.logEvent(name: 'send_message');
   }
 
 }
 
 class ChatMessage extends StatelessWidget {
-  final String text;
-  final AnimationController animationController;
+  final DataSnapshot snapshot;
+  final Animation animation;
 
-  ChatMessage({this.text, this.animationController});
+  ChatMessage({this.snapshot, this.animation});
 
   @override
   Widget build(BuildContext context) {
     return new SizeTransition(
-      sizeFactor: new CurvedAnimation(parent: animationController, curve: Curves.easeOut),
+      sizeFactor: new CurvedAnimation(parent: animation, curve: Curves.easeOut),
       axisAlignment: 0.0,
       child: new Container(
         margin: const EdgeInsets.symmetric(vertical: 10.0),
@@ -158,17 +165,18 @@ class ChatMessage extends StatelessWidget {
           children: <Widget>[
             new Container(
               margin: const EdgeInsets.only(right: 16.0),
-              child: new GoogleUserCircleAvatar(googleSignIn.currentUser.photoUrl),
+              child: new GoogleUserCircleAvatar(snapshot.value['senderPhotoUrl']),
             ),
             new Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                new Text(googleSignIn.currentUser.displayName,
+                new Text(
+                  snapshot.value['senderName'],
                   style: Theme.of(context).textTheme.subhead
                 ),
                 new Container(
                   margin: const EdgeInsets.only(top: 5.0),
-                  child: new Text(text),
+                  child: new Text(snapshot.value['text']),
                 ),
               ],
             ),
