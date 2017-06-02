@@ -1,8 +1,5 @@
-# friendly_chat
+# Sample Flutter Chat App
 
-A new Flutter project.
+Source code chat app using flutter and firebase.
 
-## Getting Started
-
-For help getting started with Flutter, view our online
-[documentation](http://flutter.io/).
+[Firebase for flutter codelab](https://codelabs.developers.google.com/codelabs/flutter-firebase)
