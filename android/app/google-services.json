@@ -1,0 +1,62 @@
+{
+  "project_info": {
+    "project_number": "881296809178",
+    "firebase_url": "https://friendlychat-b1a46.firebaseio.com",
+    "project_id": "friendlychat-b1a46",
+    "storage_bucket": "friendlychat-b1a46.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:881296809178:android:c9073e9ff3475f76",
+        "android_client_info": {
+          "package_name": "com.adisayoga.friendlychat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "881296809178-qp6craptugg45e31srlgmu08qv6gun3n.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.adisayoga.friendlychat",
+            "certificate_hash": "9922117196cf73e5f3d1c705cfec3fc2f16795f0"
+          }
+        },
+        {
+          "client_id": "881296809178-2nqiqk6kmb942im7hnnignmpmlr502ll.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDH5Y96j4mpn1PyRm3Ck3jm4QtfLF5Wi3k"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "881296809178-eren0csvl0jdjfbocn2id3kb72serofd.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.adisayoga.friendlychat"
+              }
+            },
+            {
+              "client_id": "881296809178-2nqiqk6kmb942im7hnnignmpmlr502ll.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
